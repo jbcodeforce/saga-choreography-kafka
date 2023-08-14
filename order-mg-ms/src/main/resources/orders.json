@@ -1,0 +1,28 @@
+[
+    { "orderID" : "Order01",
+       "productID" : "P01",
+        "customerID" : "C01",
+        "quantity": 10,
+        "destinationAddress": {"street": "12 main street", "city" : "san francisco", 
+            "country": "USA", "state": "CA", "zipcode": "92000"},
+        "status" : "assigned",
+        "containerID": "C21",
+        "voyageID" : "V020",
+        "pickupDate": "2023/09/01",
+        "creationDate": "2023/08/14",
+        "updateDate": "2023/08/14"
+    },
+    { "orderID" : "Order02",
+        "productID" : "P02",
+         "customerID" : "C03",
+         "quantity": 7,
+         "destinationAddress": {"street": "12 blue horizon avenue", "city" : "san francisco", 
+             "country": "USA", "state": "CA", "zipcode": "92000"},
+         "status" : "assigned",
+         "containerID": "C23",
+         "voyageID" : "V021",
+         "pickupDate": "2023/09/01",
+         "creationDate": "2023/08/14",
+         "updateDate": "2023/08/14"
+     }
+]
