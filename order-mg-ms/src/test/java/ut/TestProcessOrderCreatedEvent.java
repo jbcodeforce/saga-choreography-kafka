@@ -2,12 +2,12 @@ package ut;
 
 
 
+import org.acme.order.infra.events.order.OrderCreatedEvent;
+import org.acme.order.infra.events.order.OrderEvent;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.quarkus.test.junit.QuarkusTest;
-import jb.arc.order.infra.events.order.OrderCreatedEvent;
-import jb.arc.order.infra.events.order.OrderEvent;
 
 @QuarkusTest
 public class TestProcessOrderCreatedEvent {

@@ -1,13 +1,13 @@
-# Order Management service
+# reefer-mg-ms
 
+This project uses Quarkus, the Supersonic Subatomic Java Framework.
+
+If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
 
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
-
 ```shell script
-docker compose up -d
-# Then
 ./mvnw compile quarkus:dev
 ```
 
@@ -39,13 +39,18 @@ You can create a native executable using:
 ```
 
 Or, if you don't have GraalVM installed, you can run the native executable build in a container using: 
-
 ```shell script
 ./mvnw package -Dnative -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./target/order-mg-ms-1.0.0-runner`
+You can then execute your native executable with: `./target/reefer-mg-ms-1.0.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
 
+## Provided Code
 
+### RESTEasy Reactive
+
+Easily start your Reactive RESTful Web Services
+
+[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
