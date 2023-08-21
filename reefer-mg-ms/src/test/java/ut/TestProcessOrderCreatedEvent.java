@@ -6,17 +6,17 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.acme.reefer.domain.Reefer;
+import org.acme.reefer.infra.events.order.OrderAgent;
+import org.acme.reefer.infra.events.order.OrderCreatedEvent;
+import org.acme.reefer.infra.events.order.OrderEvent;
+import org.acme.reefer.infra.events.reefer.ReeferAllocated;
+import org.acme.reefer.infra.events.reefer.ReeferEvent;
+import org.acme.reefer.infra.events.reefer.ReeferEventDeserializer;
+import org.acme.reefer.infra.repo.ReeferRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import ibm.eda.kc.freezerms.domain.Reefer;
-import ibm.eda.kc.freezerms.infra.events.order.OrderAgent;
-import ibm.eda.kc.freezerms.infra.events.order.OrderCreatedEvent;
-import ibm.eda.kc.freezerms.infra.events.order.OrderEvent;
-import ibm.eda.kc.freezerms.infra.events.reefer.ReeferAllocated;
-import ibm.eda.kc.freezerms.infra.events.reefer.ReeferEvent;
-import ibm.eda.kc.freezerms.infra.events.reefer.ReeferEventDeserializer;
-import ibm.eda.kc.freezerms.infra.repo.ReeferRepository;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.quarkus.test.junit.QuarkusTest;
 

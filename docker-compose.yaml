@@ -62,3 +62,21 @@ services:
       KAFKA_BROKERCONNECT: "kafka:29092"
     depends_on:
       - kafka
+  orderms:
+    image: jbcodeforce/saga-order-ms
+    container_name: orderms
+    ports:
+      - 8080:8080
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+    depends_on:
+      - kafka
+  reeferms:
+    image: jbcodeforce/saga-reefer-ms
+    container_name: reefer-ms
+    ports:
+      - 8081:8080
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+    depends_on:
+      - kafka

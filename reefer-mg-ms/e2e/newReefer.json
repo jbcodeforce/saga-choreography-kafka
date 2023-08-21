@@ -1,0 +1,10 @@
+
+
+{
+    "capacity": 80,
+    "type": "B12",
+    "brand": "Binder",
+    "status": "free",
+    "location": "San Francisco",
+    "currentFreeCapacity": 100
+  }

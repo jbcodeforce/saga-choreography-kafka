@@ -1,0 +1,1 @@
+curl -X 'POST'   'http://localhost:8081/api/v1/reefers'   -H 'accept: application/json' -H 'Content-Type: application/json'  -d @$(pwd)/newReefer.json

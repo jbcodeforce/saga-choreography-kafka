@@ -3,15 +3,15 @@ package ut;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.acme.reefer.infra.events.order.OrderCreatedEvent;
+import org.acme.reefer.infra.events.order.OrderEvent;
+import org.acme.reefer.infra.events.order.OrderEventDeserializer;
+import org.acme.reefer.infra.events.reefer.ReeferEvent;
+import org.acme.reefer.infra.events.reefer.ReeferEventDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.Test;
 
-import ibm.eda.kc.freezerms.infra.events.order.OrderCreatedEvent;
-import ibm.eda.kc.freezerms.infra.events.order.OrderEvent;
-import ibm.eda.kc.freezerms.infra.events.order.OrderEventDeserializer;
-import ibm.eda.kc.freezerms.infra.events.reefer.ReeferEvent;
-import ibm.eda.kc.freezerms.infra.events.reefer.ReeferEventDeserializer;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kafka.InjectKafkaCompanion;

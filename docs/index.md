@@ -76,3 +76,38 @@ Each code structure is based on the domain-driven-design practice with clear sep
 ```
 
 Events are defined in the infrastructure level, as well as the JAX-RS APIs.
+
+### Compensation
+
+The SAGA pattern comes with the tradeoff that a compensation process must also be implemented in the case that one, or multiple, of the sub transactions fails or does not complete so that the system rolls back to the initial state before the transaction began.
+
+In our specific case, a new order creation transaction can fail either because we can not find a refrigerator container to be allocated to the order or we can not find a boat to assigned to the order.
+
+Most likely a compensation may involve a human to continue the process, or more complex business rules based, inference engine to do the appropriate actions to handle the order onHold.
+
+### No reefer
+
+![no reefer](./diagrams/saga-flow-2.drawio.png)
+
+When a new order creation is requested by a customer but there is no refrigerator container to be allocated to such order, either because the container(s) do not have enough capacity or there is no container available in the origin port for such order, the compensation process for the order creation transaction is quite simple. The order microservice will not get an answer from the reefer manager, and after a certain time, it will trigger the compensation flow by sending a OrderUpdate with status onHold. The vessel service which may has responded positively before that, may roll back the order to vessel allocation relationship.
+
+### No vessel
+
+![no vessel](./diagrams/saga-flow-3.drawio.png)
+
+This case is the sysmetric of the other one. The actions flow remains as expected for the SAGA transaction until the Vessel microservice is not answering after a time period or answering negatively. As a result, the Order Command microservice will transition the order to `OnHold` and emit an OrderUpdateEvent to inform the saga participants. In this case, the Reefer manager is one of those interested party, as it will need to kick off the compensation task, which in this case is nothing more than de-allocate the container to the order to make it available for any other coming order.
+
+## Demonstration
+
+In this repository, we have define a docker compose file that let you run the demonstration on your local computer. You need podman or docker and docker compose.
+
+```sh
+docker-compose up -d
+```
+
+The following containers are running:
+
+```
+```
+
+

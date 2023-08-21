@@ -1,14 +1,17 @@
 package org.acme.reefer.domain;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import org.acme.reefer.infra.api.dto.OrderDTO;
+import org.acme.reefer.infra.events.reefer.ReeferEventProducer;
+import org.acme.reefer.infra.repo.ReeferRepository;
 import org.jboss.logging.Logger;
 
-import ibm.eda.kc.freezerms.infra.api.dto.OrderDTO;
-import ibm.eda.kc.freezerms.infra.repo.ReeferRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 /**
  * Service layer should implement business rules and logic
@@ -19,6 +22,9 @@ public class ReeferService {
 
     @Inject
     public ReeferRepository repository;
+
+    @Inject
+    public ReeferEventProducer producer;
 
     public ReeferService(ReeferRepository repo) {
         this.repository = repo;
@@ -33,8 +39,16 @@ public class ReeferService {
         return repository.getAll();
     }
 
+    @Transactional
     public Reefer saveReefer(Reefer r){
+        if (r.reeferID == null) {
+            r.reeferID = UUID.randomUUID().toString();
+        }
+        if (r.creationDate == null) {
+			r.creationDate = LocalDate.now().toString();
+		}
         repository.addReefer(r);
+        producer.sendReeferCreatedEventFrom(r);
         return r;
     }
 
