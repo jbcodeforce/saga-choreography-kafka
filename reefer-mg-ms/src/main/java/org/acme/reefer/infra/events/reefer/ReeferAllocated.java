@@ -4,12 +4,11 @@ import java.util.List;
 
 import org.acme.reefer.domain.Reefer;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
  * Generate an event that could have aggregated IDs
  */
-@RegisterForReflection
+
 public class ReeferAllocated extends ReeferVariablePayload {
 	public String orderID;
 	public boolean aggregate = false;

@@ -3,9 +3,10 @@ package org.acme.reefer.infra.events.order;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
-@JsonTypeInfo(use=Id.DEDUCTION,defaultImpl= OrderCreatedEvent.class)
+@JsonTypeInfo(use=Id.CLASS,include = As.PROPERTY,property = "@class", defaultImpl= OrderCreatedEvent.class)
 @JsonSubTypes({
     @Type(value=OrderCreatedEvent.class,name="OrderCreatedEvent"),
     @Type(value=OrderUpdatedEvent.class, name="OrderUpdatedEvent")})

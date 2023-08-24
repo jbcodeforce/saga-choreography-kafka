@@ -32,7 +32,7 @@ public class OrderEventProducer {
         oe.status = order.status;
         OrderUpdatedEvent oce = new OrderUpdatedEvent();
         oce.reeferIDs = order.containerID;
-        oce.voyageID = order.voyageID;
+        oce.vesselID = order.vesselID;
 		oe.payload = oce;
         sendOrder(oe.orderID,oe);
     }

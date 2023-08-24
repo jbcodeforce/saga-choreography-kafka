@@ -16,7 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 /**
- * Listen to vessel assignement topic to process voyage allocation
+ * Listen to vessel assignement topic to process vessel allocation
  */
 @ApplicationScoped
 public class VesselAgent {
@@ -30,25 +30,25 @@ public class VesselAgent {
 	public OrderEventProducer producer;
     
     @Incoming("vessels")
-    public CompletionStage<Void> processVoyageEvent(Message<VesselEvent> messageWithVoyageEvent){
-        logger.info("Received voyage event for : " + messageWithVoyageEvent.getPayload().vesselID);
-        VesselEvent oe = messageWithVoyageEvent.getPayload();
+    public CompletionStage<Void> processVesselEvent(Message<VesselEvent> messageWithVesselEvent){
+        logger.info("Received vessel event for : " + messageWithVesselEvent.getPayload().vesselID);
+        VesselEvent oe = messageWithVesselEvent.getPayload();
         switch( oe.getType()){
             case VesselEvent.TYPE_VESSEL_ASSIGNED:
-            VesselEvent re=processVoyageAssignEvent(oe);
+            VesselEvent re=processVesselAssignEvent(oe);
                 break;
             default:
                 break;
         }
-        return messageWithVoyageEvent.ack();
+        return messageWithVesselEvent.ack();
     }
 
     @Transactional
-    public VesselEvent processVoyageAssignEvent(VesselEvent ve) {
+    public VesselEvent processVesselAssignEvent(VesselEvent ve) {
         VesselAllocated ra = (VesselAllocated)ve.payload;
         ShippingOrder order = repo.findById(ra.orderID);
         if (order != null) {
-            order.voyageID = ve.vesselID;     
+            order.vesselID = ve.vesselID;     
             if (order.containerID != null) {
                 order.status = ShippingOrder.ASSIGNED_STATUS;
                 producer.sendOrderUpdateEventFrom(order);
@@ -62,8 +62,8 @@ public class VesselAgent {
     }
 
 
-    @Scheduled(cron = "{voyage.cron.expr}")
-    void cronJobForVoyageAnswerNotReceived() {
+    @Scheduled(cron = "{vessel.cron.expr}")
+    void cronJobForVesselAnswerNotReceived() {
         // badly done - brute force as of now
         for(ShippingOrder o : repo.getAll()) {
             if (o.status.equals(ShippingOrder.PENDING_STATUS)) {

@@ -53,7 +53,7 @@ public class ReeferAgent {
         ShippingOrder order = repo.findById(ra.orderID);
         if (order != null) {
             order.containerID = ra.reeferIDs;
-            if (order.voyageID != null) {
+            if (order.vesselID != null) {
                 order.status = ShippingOrder.ASSIGNED_STATUS;
                 producer.sendOrderUpdateEventFrom(order);
             }
@@ -70,7 +70,7 @@ public class ReeferAgent {
         // badly done - brute force as of now
         for(ShippingOrder o : repo.getAll()) {
             if (o.status.equals(ShippingOrder.PENDING_STATUS)) {
-                if (o.voyageID != null) {
+                if (o.vesselID != null) {
                     o.status = ShippingOrder.ONHOLD_STATUS;
                     producer.sendOrderUpdateEventFrom(o);
                 }

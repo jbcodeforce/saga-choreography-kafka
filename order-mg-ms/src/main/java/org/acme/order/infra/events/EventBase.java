@@ -9,8 +9,8 @@ package org.acme.order.infra.events;
 public class EventBase {
 
      public static final String DEFAULT_VERSION = "1.0.0";
-     public static final String TYPE_VOYAGE_ASSIGNED = "VoyageAssigned"; // from voyage ms
-     public static final String TYPE_VOYAGE_NOT_FOUND = "VoyageNotFound"; // from voyage ms
+     public static final String TYPE_VESSEL_ASSIGNED = "VesselAssigned"; // from vessel ms
+     public static final String TYPE_VESSEL_NOT_FOUND = "VesselNotFound"; // from vessel ms
 
 	    
     public long timestampMillis;

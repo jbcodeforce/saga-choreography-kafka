@@ -12,9 +12,9 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.2.4.Final</quarkus.platform.version>
+    <quarkus.platform.version>3.3.0</quarkus.platform.version>
     <skipITs>true</skipITs>
-    <surefire-plugin.version>3.0.0</surefire-plugin.version>
+    <surefire-plugin.version>3.1.2</surefire-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -35,10 +35,6 @@
      <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-scheduler</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -72,11 +68,12 @@
       <artifactId>quarkus-test-kafka-companion</artifactId>
       <scope>test</scope>
   </dependency>
-    <dependency>
-      <groupId>io.smallrye.reactive</groupId>
-      <artifactId>smallrye-reactive-messaging-in-memory</artifactId>
-      <scope>test</scope>
-    </dependency>
+<!-- https://mvnrepository.com/artifact/io.smallrye.reactive/smallrye-reactive-messaging-in-memory -->
+  <dependency>
+    <groupId>io.smallrye.reactive</groupId>
+    <artifactId>smallrye-reactive-messaging-in-memory</artifactId>
+    <scope>test</scope>
+  </dependency>
   </dependencies>
   <build>
     <plugins>

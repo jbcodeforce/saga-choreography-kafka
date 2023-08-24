@@ -25,7 +25,7 @@ public class OrderDTO {
     public String destinationCity;
     public String expectedDeliveryDate;
     public String status;
-	public String voyageID;
+	public String vesselID;
 	public String containerID;
 
     public OrderDTO() {
@@ -48,7 +48,7 @@ public class OrderDTO {
   
 
     public void setAssignStatus() {
-    	if (this.voyageID != null && this.containerID != null) {
+    	if (this.vesselID != null && this.containerID != null) {
     		this.status = OrderDTO.ASSIGNED_STATUS;
     	}
     }
@@ -58,7 +58,7 @@ public class OrderDTO {
     // For now, we are updating an existing order with whatever comes from the update order command.
     public void update(OrderDTO oco) {
         this.containerID = oco.getContainerID();
-        this.voyageID = oco.getVoyageID();
+        this.vesselID = oco.getVesselID();
 	}
 
     public void spoilOrder(){
@@ -133,8 +133,8 @@ public class OrderDTO {
 		this.quantity = value;
 	}
 
-	public String getVoyageID() {
-		return voyageID;
+	public String getVesselID() {
+		return vesselID;
 	}
 
 	public String getContainerID() {

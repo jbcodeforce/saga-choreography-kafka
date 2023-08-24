@@ -1,4 +1,4 @@
-package org.acme.reefer.infra.events;
+package org.acme.vessel.infra.events;
 
 /**
  * This is the common part of the order events. 
@@ -9,8 +9,7 @@ package org.acme.reefer.infra.events;
 public class EventBase {
 
      public static final String DEFAULT_VERSION = "1.0.0";
-     public static final String TYPE_VESSEL_ASSIGNED = "VesselAssigned"; // from vessel ms
-     public static final String TYPE_VESSEL_NOT_FOUND = "VesselNotFound"; // from vessel ms
+
 
     protected long timestampMillis;
     protected String type;

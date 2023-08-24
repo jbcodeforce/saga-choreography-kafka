@@ -4,7 +4,7 @@ package ut;
 
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.acme.reefer.domain.Reefer;
 import org.acme.reefer.infra.events.order.OrderAgent;

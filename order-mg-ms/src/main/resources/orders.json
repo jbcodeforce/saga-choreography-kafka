@@ -7,7 +7,7 @@
             "country": "USA", "state": "CA", "zipcode": "92000"},
         "status" : "assigned",
         "containerID": "C21",
-        "voyageID" : "V020",
+        "vesselID" : "V020",
         "pickupDate": "2023/09/01",
         "creationDate": "2023/08/14",
         "updateDate": "2023/08/14"
@@ -20,7 +20,7 @@
              "country": "USA", "state": "CA", "zipcode": "92000"},
          "status" : "assigned",
          "containerID": "C23",
-         "voyageID" : "V021",
+         "vesselID" : "V021",
          "pickupDate": "2023/09/01",
          "creationDate": "2023/08/14",
          "updateDate": "2023/08/14"

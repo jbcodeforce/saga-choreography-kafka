@@ -5,6 +5,7 @@ package ut;
 import org.acme.order.infra.events.order.OrderCreatedEvent;
 import org.acme.order.infra.events.order.OrderEvent;
 import org.junit.jupiter.api.Test;
+import org.wildfly.common.Assert;
 
 import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.quarkus.test.junit.QuarkusTest;
@@ -23,6 +24,7 @@ public class TestProcessOrderCreatedEvent {
       oe.quantity = 80;
       ObjectMapperSerializer<OrderEvent> mapper = new ObjectMapperSerializer<OrderEvent>();
       byte[] inMessage = mapper.serialize("orders", oe);
+      Assert.assertNotNull(inMessage);
       mapper.close();
     }
 
