@@ -80,3 +80,12 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
     depends_on:
       - addTopics
+  vesselms:
+    image: jbcodeforce/saga-vessel-ms
+    container_name: vesselms
+    ports:
+      - 8082:8080
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+    depends_on:
+      - addTopics

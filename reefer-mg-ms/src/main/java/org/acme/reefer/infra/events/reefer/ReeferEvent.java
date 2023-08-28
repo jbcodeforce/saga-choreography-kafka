@@ -10,6 +10,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public class ReeferEvent extends EventBase {
     public static final String REEFER_ALLOCATED_TYPE = "ReeferAllocated";
     public static final String NEW_REEFER_TYPE = "NewReeferCreated";
+    public static final String REEFER_UPDATE_TYPE = "ReeferUpdated";
 	public String reeferID;
     public ReeferVariablePayload payload;
 

@@ -110,4 +110,8 @@ The following containers are running:
 ```
 ```
 
+## More reading
+
+* [Quarkus Apache Kafka user guide.](https://quarkus.io/guides/kafka)
+
 

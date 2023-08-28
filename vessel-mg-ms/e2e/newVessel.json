@@ -1,0 +1,10 @@
+{
+    "vesselID": "V16",
+    "capacity": 1000,
+    "type": "VO-10",
+    "status": "available",
+    "departurePort": "Oakland",
+    "arrivalPort": "Shanghai",
+    "currentFreeCapacity": 900,
+    "creationDate": "2023-08-30"
+  }

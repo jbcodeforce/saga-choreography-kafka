@@ -1,0 +1,1 @@
+curl -X 'POST'   'http://localhost:8082/api/v1/vessel'   -H 'accept: application/json' -H 'Content-Type: application/json'  -d @$(pwd)/newVessel.json

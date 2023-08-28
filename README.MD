@@ -32,10 +32,16 @@ The content of this repository is written with markdown files, packaged with [Mk
 
 --- 
 
-## Contribute
+## Contributing
 
-As this implementation solution is part of the Event Driven architeture reference architecture, the [contribution policies](./docs/CONTRIBUTING.md) apply the same way here.
+Please create a new GitHub issue for any feature requests, bugs, or documentation improvements.
+
+Where possible, please also submit a pull request for the change.
 
 **Contributors:**
 
 * [Jerome Boyer](https://www.linkedin.com/in/jeromeboyer/)
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.
