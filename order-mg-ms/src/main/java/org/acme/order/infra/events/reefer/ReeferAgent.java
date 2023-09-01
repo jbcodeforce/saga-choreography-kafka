@@ -32,7 +32,7 @@ public class ReeferAgent {
     @Incoming("reefers")
     public CompletionStage<Void> processReeferEvent(Message<ReeferEvent> messageWithReeferEvent){
         ReeferEvent oe = messageWithReeferEvent.getPayload();
-        switch( oe.getType()){
+        switch( oe.getEventType()){
             case ReeferEvent.REEFER_ALLOCATED_TYPE:
                 ReeferEvent re=processReeferAllocatedEvent(oe);
                 break;

@@ -6,7 +6,7 @@ public class VesselCreatedEvent extends VesselVariablePayload{
 
     public String vesselID;
     public long capacity;
-    public String type; 
+    public String shipType; 
     public String status;
     public String departurePort;
     public String arrivalPort;
@@ -15,10 +15,13 @@ public class VesselCreatedEvent extends VesselVariablePayload{
         super();
         vesselID = v.vesselID;
         capacity = v.capacity;
-        type = v.type;
+        shipType = v.shipType;
         status = v.status;
         departurePort = v.departurePort;
         arrivalPort= v.arrivalPort;
 	}
 
+    public String toString(){
+        return "Vessel: " + vesselID + " capacity: " + capacity + " status: " + status;
+     }
 }

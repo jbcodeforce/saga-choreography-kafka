@@ -2,26 +2,24 @@ package org.acme.vessel.infra.events.vessels;
 
 import java.util.Date;
 
-import org.acme.vessel.domain.Vessel;
 import org.acme.vessel.infra.events.EventBase;
 
 public class VesselEvent extends EventBase {
 
-    public static final String TYPE_VESSEL_ASSIGNED = "VesselAssigned"; 
-    public static final String TYPE_VESSEL_NOT_FOUND = "VesselNotFound"; 
+    public static final String VESSEL_ALLOCATED_TYPE = "VesselAllocated"; 
+    public static final String VESSEL_DESALLOCATED_TYPE = "VesselDesallocated"; 
+    public static final String VESSEL_NOT_FOUND_TYPE = "VesselNotFound"; 
+    public static final String VESSEL_CREATED_TYPE = "VesselCreated"; 
     public String vesselID;
     public VesselVariablePayload payload;
 
     public VesselEvent() {
-        super();
-        this.timestampMillis = new Date().getTime();
-        this.version = DEFAULT_VERSION;
+        super(VESSEL_CREATED_TYPE, new Date().getTime(), EventBase.DEFAULT_VERSION);
     }
 
-    public VesselEvent(Vessel v) {
-        super();
-        this.timestampMillis = new Date().getTime();
-        this.version = DEFAULT_VERSION;
-        this.vesselID = v.vesselID;
+    public VesselEvent(String key, String etype, VesselVariablePayload p) {
+        super(etype, new Date().getTime(), EventBase.DEFAULT_VERSION);
+        this.vesselID = key;
+        this.payload = p;
     }
 }

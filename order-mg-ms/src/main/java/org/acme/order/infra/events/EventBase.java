@@ -14,7 +14,7 @@ public class EventBase {
 
 	    
     public long timestampMillis;
-    public String type;
+    public String eventType;
     public String version;
 
     public EventBase() {
@@ -22,7 +22,7 @@ public class EventBase {
 
     public EventBase(long timestampMillis, String type, String version) {
         this.timestampMillis = timestampMillis;
-        this.type = type;
+        this.eventType = type;
         this.version = version;
     }
     
@@ -38,13 +38,13 @@ public class EventBase {
     }
 
     
-    public String getType() {
-        return type;
+    public String getEventType() {
+        return eventType;
     }
 
     
-    public void setType(String type) {
-        this.type = type;
+    public void setEventType(String type) {
+        this.eventType = type;
     }
 
     

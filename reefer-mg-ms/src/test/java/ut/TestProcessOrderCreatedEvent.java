@@ -70,7 +70,7 @@ public class TestProcessOrderCreatedEvent {
         oe.orderID = "Test01";
         oe.quantity = 80;
         ReeferEvent re = agent.processOrderCreatedEvent(oe);
-        Assertions.assertEquals(ReeferEvent.REEFER_ALLOCATED_TYPE,re.getType());
+        Assertions.assertEquals(ReeferEvent.REEFER_ALLOCATED_TYPE,re.getEventType());
         Assertions.assertEquals(oe.orderID,((ReeferAllocated)re.payload).orderID);
         Assertions.assertNotNull(((ReeferAllocated)re.payload).reeferIDs);
         System.out.println("Reefer -> " + ((ReeferAllocated)re.payload).reeferIDs);

@@ -11,5 +11,6 @@ public interface VesselRepository {
     public Vessel getById(String key);
     public Vessel  getVesselForOrder(String transactionID, String origin, String destination, long capacity);
     public  Vessel getVesselsForTransaction(String transactionID);
-    public void cleanTransaction(String transactionID, long capacity);
+    public String cleanTransaction(String transactionID, long capacity);
+    public void assignVesselToOrder(String orderID, Vessel v);
 }

@@ -33,7 +33,7 @@ public class VesselAgent {
     public CompletionStage<Void> processVesselEvent(Message<VesselEvent> messageWithVesselEvent){
         logger.info("Received vessel event for : " + messageWithVesselEvent.getPayload().vesselID);
         VesselEvent oe = messageWithVesselEvent.getPayload();
-        switch( oe.getType()){
+        switch( oe.getEventType()){
             case VesselEvent.TYPE_VESSEL_ASSIGNED:
             VesselEvent re=processVesselAssignEvent(oe);
                 break;

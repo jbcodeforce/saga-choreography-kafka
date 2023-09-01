@@ -46,8 +46,7 @@ public class VesselService {
 			r.creationDate = LocalDate.now().toString();
 		}
         repository.addVessel(r);
-        VesselEvent evt = new VesselEvent(r);
-        evt.payload = new VesselCreatedEvent(r);
+        VesselEvent evt = new VesselEvent(r.vesselID,VesselEvent.VESSEL_CREATED_TYPE,new VesselCreatedEvent(r));
         eventProducer.sendEvent(r.vesselID, evt);
         return r;
     }

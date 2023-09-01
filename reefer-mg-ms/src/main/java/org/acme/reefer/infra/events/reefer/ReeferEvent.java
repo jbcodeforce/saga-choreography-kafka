@@ -26,7 +26,7 @@ public class ReeferEvent extends EventBase {
 
     public ReeferEvent( String id, String aType, ReeferVariablePayload payload) {
         this.payload = payload;
-        this.type = aType;
+        this.eventType = aType;
         this.reeferID = id;
         this.timestampMillis = new Date().getTime();
         this.version = DEFAULT_VERSION;

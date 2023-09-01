@@ -4,7 +4,7 @@
 
       "vesselID": "V01",
       "capacity": 1000,
-      "type": "VO-20",
+      "shipType": "VO-20",
       "status": "available",
       "currentFreeCapacity": 1000,
       "departurePort": "San Francisco",
@@ -15,7 +15,7 @@
 
       "vesselID": "V02",
       "capacity": 1500,
-      "type": "VO-20",
+      "shipType": "VO-20",
       "status": "available",
       "currentFreeCapacity": 1300,
       "departurePort": "San Francisco",
@@ -25,10 +25,21 @@
    {
       "vesselID": "V03",
       "capacity": 1500,
-      "type": "VO-33",
+      "shipType": "VO-33",
       "status": "available",
       "currentFreeCapacity": 1300,
       "departurePort": "Boston",
+      "arrivalPort": "Shanghai",
+      "creationDate": "2022-03-30"
+   },
+   {
+
+      "vesselID": "V04",
+      "capacity": 1000,
+      "shipType": "VO-20",
+      "status": "available",
+      "currentFreeCapacity": 1000,
+      "departurePort": "Oakland",
       "arrivalPort": "Shanghai",
       "creationDate": "2022-03-30"
    }

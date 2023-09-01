@@ -19,7 +19,7 @@ public class VesselEventProducer {
     public Emitter<VesselEvent> eventProducer;
 
     public void sendEvent(String key, VesselEvent vesselEvent){
-		logger.info("Send vessel message --> " + vesselEvent.vesselID + " ts: " + vesselEvent.getTimestampMillis());
+		logger.info("Send vessel message --> " + vesselEvent.vesselID + " type:" + vesselEvent.getEventType() + " ts: " + vesselEvent.getTimestampMillis());
 		eventProducer.send(Message.of(vesselEvent).addMetadata(OutgoingKafkaRecordMetadata.<String>builder()
 			.withKey(key).build())
 			.withAck( () -> {

@@ -8,19 +8,19 @@ package org.acme.vessel.infra.events;
  */
 public class EventBase {
 
-     public static final String DEFAULT_VERSION = "1.0.0";
+    public static final String DEFAULT_VERSION = "1.0.0";
 
 
     protected long timestampMillis;
-    protected String type;
+    protected String eventType;
     protected String version;
 
     public EventBase() {
     }
 
-    public EventBase(long timestampMillis, String type, String version) {
+    public EventBase(String type, long timestampMillis,  String version) {
         this.timestampMillis = timestampMillis;
-        this.type = type;
+        this.eventType = type;
         this.version = version;
     }
     
@@ -36,13 +36,13 @@ public class EventBase {
     }
 
     
-    public String getType() {
-        return type;
+    public String getEventType() {
+        return eventType;
     }
 
     
-    public void setType(String type) {
-        this.type = type;
+    public void setEventType(String type) {
+        this.eventType = type;
     }
 
     

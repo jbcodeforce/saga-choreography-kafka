@@ -9,11 +9,9 @@ package org.acme.reefer.infra.events;
 public class EventBase {
 
      public static final String DEFAULT_VERSION = "1.0.0";
-     public static final String TYPE_VESSEL_ASSIGNED = "VesselAssigned"; // from vessel ms
-     public static final String TYPE_VESSEL_NOT_FOUND = "VesselNotFound"; // from vessel ms
-
+   
     protected long timestampMillis;
-    protected String type;
+    protected String eventType;
     protected String version;
 
     public EventBase() {
@@ -21,7 +19,7 @@ public class EventBase {
 
     public EventBase(long timestampMillis, String type, String version) {
         this.timestampMillis = timestampMillis;
-        this.type = type;
+        this.eventType = type;
         this.version = version;
     }
     
@@ -37,13 +35,13 @@ public class EventBase {
     }
 
     
-    public String getType() {
-        return type;
+    public String getEventType() {
+        return eventType;
     }
 
     
-    public void setType(String type) {
-        this.type = type;
+    public void setEventType(String type) {
+        this.eventType = type;
     }
 
     

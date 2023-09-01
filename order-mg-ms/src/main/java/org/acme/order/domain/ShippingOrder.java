@@ -13,7 +13,7 @@ public class ShippingOrder {
     public static final String ONHOLD_STATUS = "onHold";
     public static final String ASSIGNED_STATUS = "assigned";
     public static final String REJECTED_STATUS = "rejected";
-    public static final String SPOILT_STATUS = "spoilt";
+    public static final String COMPLETED_STATUS = "completed";
     
     public String orderID;
     public String productID;
@@ -63,7 +63,7 @@ public class ShippingOrder {
 	}
 
     public void spoilOrder(){
-        this.status = ShippingOrder.SPOILT_STATUS;
+        this.status = ShippingOrder.COMPLETED_STATUS;
     }
 
     public void rejectOrder(){

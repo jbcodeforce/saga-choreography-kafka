@@ -9,15 +9,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.acme.vessel.domain.Vessel;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.inject.Singleton;
 
-@ApplicationScoped
+
+@Singleton
 public class VesselRepositoryMem implements VesselRepository {
-    public  static ConcurrentHashMap<String,List<Vessel>> byDeparturePort = new ConcurrentHashMap<String,List<Vessel>>();
-    private ConcurrentHashMap<String, Vessel> currentOrderBacklog = new ConcurrentHashMap<String,Vessel>();
+    // real life will map those hash maps to different tables
+    public  static ConcurrentHashMap<String,List<Vessel>> byDeparturePorts = new ConcurrentHashMap<String,List<Vessel>>();
+    private static ConcurrentHashMap<String, Vessel> currentOrderBacklog = new ConcurrentHashMap<String,Vessel>();
     private static ConcurrentHashMap<String,Vessel> vessels = new ConcurrentHashMap<String,Vessel>();
 
     private static ObjectMapper mapper = new ObjectMapper();
@@ -33,16 +34,16 @@ public class VesselRepositoryMem implements VesselRepository {
             currentDefinitions.stream().forEach( (v) -> { 
                 vessels.put(v.vesselID,v);
                 if (v.departurePort != null) {
-                    if (byDeparturePort.get(v.departurePort) == null) 
-                        byDeparturePort.put(v.departurePort, new ArrayList<Vessel>());
-                    byDeparturePort.get(v.departurePort).add(v);
+                    if (byDeparturePorts.get(v.departurePort) == null) 
+                        byDeparturePorts.put(v.departurePort, new ArrayList<Vessel>());
+                    byDeparturePorts.get(v.departurePort).add(v);
                 }
                 
             });
         } catch (IOException e) {
             e.printStackTrace();
         }
-        vessels.values().stream().forEach(v -> System.out.println(v.vesselID));
+        vessels.values().stream().forEach(v -> System.out.println(v.toString()));
     }
 
     public List<Vessel> getAll(){
@@ -57,9 +58,16 @@ public class VesselRepositoryMem implements VesselRepository {
         return entity;
     }
 
+    @Override
     public Vessel updateVessel(Vessel entity) {
         vessels.put(entity.vesselID, entity);
         return entity;
+    }
+
+    @Override
+    public void assignVesselToOrder(String orderID, Vessel v){
+        currentOrderBacklog.put(orderID, v);
+        
     }
 
     @Override
@@ -68,14 +76,14 @@ public class VesselRepositoryMem implements VesselRepository {
     }
 
     /**
-     * Search vessels from departure location that has support capacity
-     * @return list of freezers support this expected catacity and at the expected location
+     * Search a vessel from departure location that has support capacity
+     * 
      */
     public  Vessel  getVesselForOrder(String transactionID,
                                 String departure,
                                 String destination,
                                 long expectedCapacity) {
-        List<Vessel> vessels = byDeparturePort.get(departure);
+        List<Vessel> vessels = byDeparturePorts.get(departure);
         if (vessels == null) return null;
         for (Vessel v : vessels) {
             if (v.arrivalPort.equals(destination)) {
@@ -91,12 +99,13 @@ public class VesselRepositoryMem implements VesselRepository {
         return currentOrderBacklog.get(transactionID);
     }
 
-    public void cleanTransaction(String transactionID , long capacity) {
-        Vessel allocatedVessel = this.currentOrderBacklog.get(transactionID);
+    public String cleanTransaction(String transactionID , long capacity) {
+        Vessel allocatedVessel = getVesselsForTransaction(transactionID);
         if (allocatedVessel != null) {
                 allocatedVessel.currentFreeCapacity+=capacity;
         }
         this.currentOrderBacklog.remove(transactionID);
+        return allocatedVessel.vesselID;
     }
 
     

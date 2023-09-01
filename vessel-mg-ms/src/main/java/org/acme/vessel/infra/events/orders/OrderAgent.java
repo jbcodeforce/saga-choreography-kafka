@@ -12,12 +12,15 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.transaction.Transactional;
 
 /**
  * Listen on orders topic to process OrderEvents such as
  * - order created
  * - order updated
  */
+@Singleton
 public class OrderAgent {
     Logger logger = Logger.getLogger(OrderAgent.class.getName());
 
@@ -29,15 +32,15 @@ public class OrderAgent {
 
     @Incoming("orders")
     public CompletionStage<Void> processOrder(Message<OrderEvent> messageWithOrderEvent){
-        logger.info("Received order : " + messageWithOrderEvent.getPayload().orderID);
+        logger.info("OrderAgent - Received order : " + messageWithOrderEvent.getPayload().orderID);
         OrderEvent oe = messageWithOrderEvent.getPayload();
-        switch( oe.getType()){
+        switch( oe.getEventType()){
             case OrderEvent.ORDER_CREATED_TYPE:
                 processOrderCreatedEvent(oe);
                 break;
             case OrderEvent.ORDER_UPDATED_TYPE:
                 logger.info("Receive order update " + oe.status);
-                if (oe.status.equals(OrderEvent.ORDER_ON_HOLD_TYPE)) {
+                if (oe.status.equals(OrderEvent.ONHOLD_STATUS)) {
                     compensateOrder(oe.orderID,oe.quantity);
                 } else {
                     logger.info("Do future processing in case of order update");
@@ -54,29 +57,37 @@ public class OrderAgent {
      * When order created, search for a vessel trip close to the pickup location, and a distination close
      * for a given date
      */
+    @Transactional
     public VesselEvent processOrderCreatedEvent( OrderEvent oe){
+        logger.info("processOrderCreatedEvent ");
         OrderCreatedEvent oce = (OrderCreatedEvent)oe.payload;
         Vessel vessel = repository.getVesselForOrder(oe.orderID, 
                                 oce.pickupCity, 
                                 oce.destinationCity,
                                 oe.quantity);
-        VesselEvent ve = new VesselEvent();
+        VesselEvent ve = null;
         if (vessel == null) {
             // normally do nothing
             logger.info("No vessel found for " + oce.pickupCity);
         } else {
-            VesselAllocated voyageAssignedEvent = new VesselAllocated(oe.orderID);
-            ve.vesselID = vessel.vesselID;
-            ve.setType(VesselEvent.TYPE_VESSEL_ASSIGNED);
-            ve.payload = voyageAssignedEvent;
-           
+            // TODO add more logic to process other event types 
+            VesselAllocated vesselAssignedEvent = new VesselAllocated(oe.orderID,vessel.vesselID,oe.quantity);
+            ve = new VesselEvent(vessel.vesselID, VesselEvent.VESSEL_ALLOCATED_TYPE, vesselAssignedEvent);
+            vessel.currentFreeCapacity = vessel.currentFreeCapacity - oe.quantity;
+            repository.updateVessel(vessel);
+            repository.assignVesselToOrder(oe.orderID, vessel);
             eventProducer.sendEvent(ve.vesselID,ve);
         }
         return ve;
     }
  
+    @Transactional
     public void compensateOrder(String txid,long capacity) {
         logger.info("Compensate on order " + txid);
-        repository.cleanTransaction(txid,capacity);
+        String vesselID = repository.cleanTransaction(txid,capacity);
+        // a capacity set to 0, represents removing the order capacity from the vessel's payload.
+        VesselAllocated voyageAssignedEvent = new VesselAllocated(txid,vesselID,0);
+        VesselEvent ve = new VesselEvent(vesselID, VesselEvent.VESSEL_DESALLOCATED_TYPE, voyageAssignedEvent);
+        eventProducer.sendEvent(vesselID, ve);
     }
 }

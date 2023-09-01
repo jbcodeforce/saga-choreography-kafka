@@ -20,7 +20,7 @@ public class OrderEventProducer {
 
     public void sendOrderCreatedEventFrom(ShippingOrder order) {
         OrderEvent oe = createOrderEvent(order);
-        oe.type = OrderEvent.ORDER_CREATED_TYPE;
+        oe.eventType = OrderEvent.ORDER_CREATED_TYPE;
         OrderCreatedEvent oce = new OrderCreatedEvent(order.getDestinationAddress().getCity(),order.getPickupAddress().getCity());
 		oe.payload = oce;
         sendOrder(oe.orderID,oe);
@@ -28,7 +28,7 @@ public class OrderEventProducer {
 
     public void sendOrderUpdateEventFrom(ShippingOrder order) {
         OrderEvent oe = createOrderEvent(order);
-        oe.type = OrderEvent.ORDER_UPDATED_TYPE;
+        oe.eventType = OrderEvent.ORDER_UPDATED_TYPE;
         oe.status = order.status;
         OrderUpdatedEvent oce = new OrderUpdatedEvent();
         oce.reeferIDs = order.containerID;

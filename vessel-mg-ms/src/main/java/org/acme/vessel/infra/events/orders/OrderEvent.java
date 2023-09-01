@@ -18,9 +18,14 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public class OrderEvent extends EventBase {
     public static final String ORDER_CREATED_TYPE = "OrderCreated";
     public static final String ORDER_UPDATED_TYPE = "OrderUpdated";
-    public static final String ORDER_REJECTED_TYPE = "OrderRejected";
-    public static final String ORDER_CANCELLED_TYPE = "OrderCancelled";
-    public static final String ORDER_ON_HOLD_TYPE = "OrderOnHold";
+
+
+    public static final String PENDING_STATUS = "pending";
+    public static final String CANCELLED_STATUS = "cancelled";
+    public static final String ONHOLD_STATUS = "onHold";
+    public static final String ASSIGNED_STATUS = "assigned";
+    public static final String REJECTED_STATUS = "rejected";
+    public static final String COMPLETED_STATUS = "completed";
     public String orderID;
     public String productID;
     public String customerID;
@@ -34,7 +39,7 @@ public class OrderEvent extends EventBase {
 
     public OrderEvent( String aType, OrderVariablePayload payload) {
         this.payload = payload;
-        this.type = aType;
+        this.eventType = aType;
         this.timestampMillis = new Date().getTime();
         this.version = DEFAULT_VERSION;
     }

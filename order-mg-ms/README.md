@@ -1,5 +1,12 @@
 # Order Management service
 
+A simple order management service to manage order to ship fresh content between countries. The order follows a state machine to control its life cycle and create events about it state changes.
+
+When created the state of the order is pending, then once it got a refrigerator container and a vessel both assigned, then it goes to assigned.
+
+![](../docs/diagrams/order-state.drawio.png)
+
+Any problem in the process should move the order onhold state.
 
 ## Running the application in dev mode
 

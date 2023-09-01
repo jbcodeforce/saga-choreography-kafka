@@ -6,11 +6,20 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class OrderUpdatedEvent extends OrderVariablePayload  {
-    public String voyageID;
+    public String vesselID;
+    public String orderID;
     public String reeferIDs;
     public String updateDate;
 
     public OrderUpdatedEvent(){
-        updateDate = LocalDate.now().toString();
+        this.updateDate = LocalDate.now().toString();
     }
+
+    public OrderUpdatedEvent(String vesselID, String orderID) {
+        this.vesselID = vesselID;
+        this.orderID = orderID;
+        this.updateDate = LocalDate.now().toString();
+    }
+
+    
 }

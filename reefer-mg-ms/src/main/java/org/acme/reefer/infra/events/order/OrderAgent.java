@@ -34,7 +34,7 @@ public class OrderAgent {
     public CompletionStage<Void> processOrder(Message<OrderEvent> messageWithOrderEvent){
         logger.info("Received order : " + messageWithOrderEvent.getPayload().orderID);
         OrderEvent oe = messageWithOrderEvent.getPayload();
-        switch( oe.getType()){
+        switch( oe.getEventType()){
             case OrderEvent.ORDER_CREATED_TYPE:
                 processOrderCreatedEvent(oe);
                 break;

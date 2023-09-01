@@ -1,8 +1,6 @@
-# vessel-mg-ms
+# Vessel Manager Microservice
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
-
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+This project uses Quarkus, see their website: https://quarkus.io/ .
 
 ## Running the application in dev mode
 
@@ -49,10 +47,7 @@ If you want to learn more about building native executables, please consult http
 
 ## Provided Code
 
-### RESTEasy Reactive
+The application exposes an API accessible via Swagger UI: http://localhost:8080/q/swagger-ui.
 
-Easily start your Reactive RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
-
+The event producer and consumer use reactive messaging and Kafka bindings.
 
