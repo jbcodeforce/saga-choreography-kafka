@@ -1,9 +1,5 @@
 package org.acme.order.infra.api;
 
-import java.util.List;
-
-import jakarta.inject.Inject;
-
 import org.acme.order.domain.OrderService;
 import org.acme.order.domain.ShippingOrder;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -11,7 +7,10 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponseSchema;
 
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -43,47 +42,47 @@ public class ShippingOrderResource {
             summary = "Get JVM system properties for particular host",
             description = "Retrieves and returns the JVM system properties from the system "
             + "service running on the particular host.")
-    public ShippingOrder createOrder(ShippingOrder order) {
-        return serv.createOrder(order);
+    public Uni<ShippingOrder> createOrder(ShippingOrder order) {
+        return Uni.createFrom().item(serv.createOrder(order));
     }
 
     @GET
-    public List<ShippingOrder> getAll() {
-        return serv.getAllOrders();
+    public Multi<ShippingOrder> getAll() {
+        return Multi.createFrom().items(serv.getAllOrders().stream());
     }
 
     @GET
     @Path("/{id}")
-    public ShippingOrder getOrderByID(@PathParam("id") String id) {
+    public Uni<ShippingOrder> getOrderByID(@PathParam("id") String id) {
         ShippingOrder order = serv.getOrderById(id);
         if (order == null) {
             throw new WebApplicationException("Order with id of " + id + " does not exist.", 404);
      
         }
-        return order;
+        return Uni.createFrom().item(order);
     }
 
     @PUT
     @Path("/cancel/{id}")
-    public ShippingOrder cancelOrderByID(@PathParam("id") String id) {
+    public Uni<ShippingOrder> cancelOrderByID(@PathParam("id") String id) {
         ShippingOrder order = serv.getOrderById(id);
         if (order == null) {
             throw new WebApplicationException("Order with id of " + id + " does not exist.", 404);
      
         }
         serv.cancelOrder(order);
-        return order;
+        return Uni.createFrom().item(order);
     }
 
     @PUT
     @Path("/{id}")
-    public ShippingOrder updateShippingOrder(@PathParam("id") String id, ShippingOrder order) {
+    public Uni<ShippingOrder> updateShippingOrder(@PathParam("id") String id, ShippingOrder order) {
         ShippingOrder orderOrigin = serv.getOrderById(id);
         if (orderOrigin == null) {
             throw new WebApplicationException("Order with id of " + id + " does not exist.", 404);
         }
         order.status=orderOrigin.status; // hack from now.
         serv.updateOrder(order);
-        return order;
+        return Uni.createFrom().item(order);
     }
 }

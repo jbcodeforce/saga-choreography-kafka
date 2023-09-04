@@ -21,7 +21,10 @@ public class OrderEventProducer {
     public void sendOrderCreatedEventFrom(ShippingOrder order) {
         OrderEvent oe = createOrderEvent(order);
         oe.eventType = OrderEvent.ORDER_CREATED_TYPE;
-        OrderCreatedEvent oce = new OrderCreatedEvent(order.getDestinationAddress().getCity(),order.getPickupAddress().getCity());
+        OrderCreatedEvent oce = new OrderCreatedEvent(order.getDestinationAddress().getCity(),
+                                    order.getPickupAddress().getCity(),
+                                    order.pickupDate,
+                                    order.quantity);
 		oe.payload = oce;
         sendOrder(oe.orderID,oe);
     }
@@ -29,17 +32,24 @@ public class OrderEventProducer {
     public void sendOrderUpdateEventFrom(ShippingOrder order) {
         OrderEvent oe = createOrderEvent(order);
         oe.eventType = OrderEvent.ORDER_UPDATED_TYPE;
-        oe.status = order.status;
-        OrderUpdatedEvent oce = new OrderUpdatedEvent();
-        oce.reeferIDs = order.containerID;
-        oce.vesselID = order.vesselID;
-		oe.payload = oce;
+        oe.status = order.getStatus();
+        oe.quantity = order.getQuantity();
+        OrderUpdatedEvent oue = new OrderUpdatedEvent();
+        oue.reeferIDs = order.containerIDs;
+        oue.vesselID = order.vesselID;
+        oue.destinationCity=order.getDestinationAddress().getCity();
+        oue.pickupCity=order.getPickupAddress().getCity();
+        oue.pickupDate=order.getPickupDate();
+        oue.expectedCapacity=order.getQuantity();
+		oe.payload = oue;
         sendOrder(oe.orderID,oe);
     }
 
 
     public void sendOrder(String key, OrderEvent orderEvent){
-        logger.info("key " + key + " order event " + orderEvent.orderID + " ts: " + orderEvent.timestampMillis);
+        logger.info("key " + key + " order event " + orderEvent.orderID 
+                    + " etype:" + orderEvent.eventType 
+                    + " ts: " + orderEvent.timestampMillis);
 		eventProducer.send(Message.of(orderEvent).addMetadata(OutgoingKafkaRecordMetadata.<String>builder()
 			.withKey(key).build())
 			.withAck( () -> {

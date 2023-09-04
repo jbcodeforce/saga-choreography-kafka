@@ -32,11 +32,13 @@ public class VesselAgent {
     @Incoming("vessels")
     public CompletionStage<Void> processVesselEvent(Message<VesselEvent> messageWithVesselEvent){
         logger.info("Received vessel event for : " + messageWithVesselEvent.getPayload().vesselID);
-        VesselEvent oe = messageWithVesselEvent.getPayload();
-        switch( oe.getEventType()){
+        VesselEvent ve = messageWithVesselEvent.getPayload();
+        switch( ve.getEventType()){
             case VesselEvent.TYPE_VESSEL_ASSIGNED:
-            VesselEvent re=processVesselAssignEvent(oe);
+                processVesselAssignEvent(ve);
                 break;
+            case VesselEvent.TYPE_VESSEL_NOT_FOUND:
+                processVesselNotFound(ve);
             default:
                 break;
         }
@@ -49,7 +51,7 @@ public class VesselAgent {
         ShippingOrder order = repo.findById(ra.orderID);
         if (order != null) {
             order.vesselID = ve.vesselID;     
-            if (order.containerID != null) {
+            if (order.containerIDs != null) {
                 order.status = ShippingOrder.ASSIGNED_STATUS;
                 producer.sendOrderUpdateEventFrom(order);
             }
@@ -61,13 +63,25 @@ public class VesselAgent {
         return ve;
     }
 
+    @Transactional
+    public void processVesselNotFound(VesselEvent ve){
+        VesselNotFound ra = (VesselNotFound)ve.payload;
+        logger.info("Order: " + ra.orderID + " " + ra.message );
+        ShippingOrder order = repo.findById(ra.orderID);
+        if (order != null) {
+            order.status = ShippingOrder.ONHOLD_STATUS;
+            repo.updateOrder(order);
+            producer.sendOrderUpdateEventFrom(order);
+        }
+        
+    }
 
     @Scheduled(cron = "{vessel.cron.expr}")
     void cronJobForVesselAnswerNotReceived() {
         // badly done - brute force as of now
         for(ShippingOrder o : repo.getAll()) {
             if (o.status.equals(ShippingOrder.PENDING_STATUS)) {
-                if (o.containerID != null) {
+                if (o.vesselID != null) {
                     o.status = ShippingOrder.ONHOLD_STATUS;
                     producer.sendOrderUpdateEventFrom(o);
                 }

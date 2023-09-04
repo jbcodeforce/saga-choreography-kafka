@@ -29,7 +29,7 @@ public class ShippingOrder {
     public String updateDate;
     public String status;
 	public String vesselID;
-	public String containerID;
+	public String containerIDs;
 
     public ShippingOrder() {
     }
@@ -49,7 +49,7 @@ public class ShippingOrder {
     }
 
     public void setAssignStatus() {
-    	if (this.vesselID != null && this.containerID != null) {
+    	if (this.vesselID != null && this.containerIDs != null) {
     		this.status = ShippingOrder.ASSIGNED_STATUS;
     	}
     }
@@ -58,8 +58,11 @@ public class ShippingOrder {
     // Implement what can be updated in an order from the customer update order command.
     // For now, we are updating an existing order with whatever comes from the update order command.
     public void update(ShippingOrder oco) {
-        this.containerID = oco.getContainerID();
+        this.containerIDs = oco.getContainerIDs();
         this.vesselID = oco.getVesselID();
+        this.customerID = oco.getCustomerID();
+        this.status = oco.getStatus();
+        this.pickupAddress = oco.getDestinationAddress();
 	}
 
     public void spoilOrder(){
@@ -152,7 +155,7 @@ public class ShippingOrder {
 		return vesselID;
 	}
 
-	public String getContainerID() {
-		return containerID;
+	public String getContainerIDs() {
+		return containerIDs;
 	}
 }

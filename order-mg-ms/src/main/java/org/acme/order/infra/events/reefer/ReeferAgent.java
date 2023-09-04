@@ -52,7 +52,7 @@ public class ReeferAgent {
                
         ShippingOrder order = repo.findById(ra.orderID);
         if (order != null) {
-            order.containerID = ra.reeferIDs;
+            order.containerIDs = ra.reeferIDs;
             if (order.vesselID != null) {
                 order.status = ShippingOrder.ASSIGNED_STATUS;
                 producer.sendOrderUpdateEventFrom(order);

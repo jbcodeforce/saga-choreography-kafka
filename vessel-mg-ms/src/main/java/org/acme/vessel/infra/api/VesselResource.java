@@ -1,11 +1,12 @@
 package org.acme.vessel.infra.api;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.acme.vessel.domain.Vessel;
 import org.acme.vessel.domain.VesselService;
 
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -29,26 +30,26 @@ public class VesselResource {
     public VesselService service;
     
     @GET
-    public List<Vessel> getAll() {
-        return service.getAllVessels();
+    public Multi<Vessel> getAll() {
+        return Multi.createFrom().items(service.getAllVessels().stream());
     }
 
     @GET
     @Path("/{id}")
-    public Vessel getVesselById(@PathParam("id") String id) {
-        return service.getVesselById(id);
+    public Uni<Vessel> getVesselById(@PathParam("id") String id) {
+        return Uni.createFrom().item(service.getVesselById(id));
     }
 
     @POST
-    public Vessel saveNewVessel( Vessel newVessel) {
+    public Uni<Vessel> saveNewVessel( Vessel newVessel) {
         logger.info("Save new Vessel " + newVessel.toString());
-        return service.saveVessel(newVessel);
+        return Uni.createFrom().item(service.saveVessel(newVessel));
     }
 
     @PUT
-    public Vessel updateVessel( Vessel newVessel) {
+    public Uni<Vessel> updateVessel( Vessel newVessel) {
         logger.info("Update Vessel " + newVessel.toString());
-        return service.updateVessel(newVessel);
+        return Uni.createFrom().item(service.updateVessel(newVessel));
     }
 
 

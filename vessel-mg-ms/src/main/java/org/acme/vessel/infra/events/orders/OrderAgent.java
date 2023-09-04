@@ -85,9 +85,12 @@ public class OrderAgent {
     public void compensateOrder(String txid,long capacity) {
         logger.info("Compensate on order " + txid);
         String vesselID = repository.cleanTransaction(txid,capacity);
-        // a capacity set to 0, represents removing the order capacity from the vessel's payload.
-        VesselAllocated voyageAssignedEvent = new VesselAllocated(txid,vesselID,0);
-        VesselEvent ve = new VesselEvent(vesselID, VesselEvent.VESSEL_DESALLOCATED_TYPE, voyageAssignedEvent);
-        eventProducer.sendEvent(vesselID, ve);
+        if (vesselID != null) {
+            // a capacity set to 0, represents removing the order capacity from the vessel's payload.
+            VesselAllocated voyageAssignedEvent = new VesselAllocated(txid,vesselID,0);
+            VesselEvent ve = new VesselEvent(vesselID, VesselEvent.VESSEL_DESALLOCATED_TYPE, voyageAssignedEvent);
+            eventProducer.sendEvent(vesselID, ve);
+        } 
+        // if reachinh here onHold may come from vessel not found
     }
 }

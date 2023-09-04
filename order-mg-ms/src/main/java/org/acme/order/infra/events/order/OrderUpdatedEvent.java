@@ -9,8 +9,16 @@ public class OrderUpdatedEvent extends OrderVariablePayload  {
     public String vesselID;
     public String reeferIDs;
     public String updateDate;
+    public String destinationCity;
+	public String pickupCity;
+    public String pickupDate;
+    public long expectedCapacity;
 
     public OrderUpdatedEvent(){
         updateDate = LocalDate.now().toString();
+    }
+
+    public String toString(){
+        return "Vessel:" + vesselID + " reeferIDs:" + reeferIDs + " quantity:" + expectedCapacity;
     }
 }

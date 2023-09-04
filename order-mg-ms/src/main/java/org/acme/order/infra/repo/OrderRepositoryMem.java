@@ -10,9 +10,9 @@ import org.acme.order.domain.ShippingOrder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 
-@ApplicationScoped
+@Singleton
 public class OrderRepositoryMem implements OrderRepository {
     private static ConcurrentHashMap<String,ShippingOrder> repo = new ConcurrentHashMap<String,ShippingOrder>();
 

@@ -6,14 +6,11 @@ import org.acme.vessel.domain.Vessel;
 import org.acme.vessel.infra.events.vessels.VesselAllocated;
 import org.acme.vessel.infra.events.vessels.VesselCreatedEvent;
 import org.acme.vessel.infra.events.vessels.VesselEvent;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.wildfly.common.Assert;
 
 import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.quarkus.test.junit.QuarkusTest;
-import io.smallrye.reactive.messaging.memory.InMemoryConnector;
 
 @QuarkusTest
 public class TestVesselEvents {
