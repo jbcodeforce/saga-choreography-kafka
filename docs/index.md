@@ -10,33 +10,33 @@ With microservice each transaction updates data within a single service, each su
 
 The Saga choreography implementation is based on a fictious fresh content shipping business process, to send fresh food to remote location using refrigerated container on vessels.
 
-The Choreography variant of the SAGA pattern, done with Kafka, involves strong decoupling between services, and each participant listens to facts from other services and acts on them independently. So each service will have at least one topic representing states on its own entity. In the figure below the saga is managed in the context of the order microservice in one of the business function like `createOrder`.
+The Choreography variant of the SAGA pattern, done with Kafka, involves strong decoupling between services, and each participant listens to facts from other services and acts on them independently. So each service will have at least one topic representing states on its own entity. In the figure below the saga is managed in the context of the order microservice in the business functions and the in event listener.
 
 ![choreography](./diagrams/saga-choreography.drawio.png){ width="900" }
 
-The figure above illustrates that each service uses its own Kafka topic to keep events about state changes for their own business entity. 
+The figure above illustrates that each service uses its own Kafka topic to keep events about state changes for their own business entity (e.g. Order, Vessel, Reefer). 
 
-To manage the saga the `Order service` needs to listen to all participants topics and correlates event using the order ID as key.
+To manage the saga the `Order service` needs to listen to all participants topics and correlates events using the order ID as key.
 
 The Order business entity in this service supports a simple state machine as defined below:
 
 ![](./diagrams/order-state.drawio.png)
 
-Each state transition should generate an event to the orders topic.
+Each state transition should generate an event to the `orders` topic. It is imoportant to note that some state transitions are event driven, while other are commands driven.
 
 The happy path looks like in the following sequence diagram:
 
 ![saga](./diagrams/saga-flow-1.drawio.png)
 
-In this scenario, we have a long running transaction that spans across the Order microservice which creates the order and maintains the Order states, the Reefer manager microservice which tries to find an empty refrigerator container with enough capacity in the origin port to support the order, the Vessel microservice which tries to find a boat from the origin port to the destination port with enough capacity for the refrigerator containers.
+In this scenario, we have a long running transaction that spans across the Order microservice which creates the order and maintains the Order states, the Reefer manager microservice which tries to find an empty refrigerator container with enough capacity in the origin port to support the order, the Vessel microservice which tries to find a boat, at the expected time of departure, from the origin port to the destination port with enough capacity for the refrigerator containers.
 
 As you can see in the diagram above, the transaction does not finish until a reefer has been allocated and a vessel is assigned to the order and, as a result, the order stays in pending state until all the sub transactions have successfully finished.
 
 ## Code repository
 
-The implementation of the services are done with Quarkus and Microprofile Messaging.
+The implementation of the services are done with Quarkus and Microprofile Reactive Messaging.
 
-Each code structure is based on the domain-driven-design practice with clear separation between layers (app, domain, infrastructure) and keep the domain layer using the ubiquituous language of each domain: order, reefer, and vessel.
+Each code repository structure is based on the domain-driven-design practices, the onion architecture, with clear separation between layers (app, domain, infrastructure) and keep the domain layer using the ubiquituous language of each domain: order, reefer, and vessel.
 
 ```
        └── order
@@ -75,7 +75,7 @@ Each code structure is based on the domain-driven-design practice with clear sep
                    └── OrderRepositoryMem.java
 ```
 
-Events are defined in the infrastructure level, as well as the JAX-RS APIs.
+Events are defined in the infrastructure level, Entities as DTO visible in JAX-RS APIs. The OpenAPI document can be built from the API definition from the code, a bottom up approach.
 
 ### Compensation
 
@@ -99,16 +99,72 @@ This case is the sysmetric of the other one. The actions flow remains as expecte
 
 ## Demonstration
 
-In this repository, we have define a docker compose file that let you run the demonstration on your local computer. You need podman or docker and docker compose.
+In this repository, we have define a docker compose file that let us run the demonstration on our local computer. 
 
-```sh
-docker-compose up -d
-```
+1. Start the solution, and open 4 web browser page to see the API of each service:
 
-The following containers are running:
+    ```sh
+    docker-compose up -d
+    ./scripts/openApis.sh
+    ```
 
-```
-```
+    The following containers are running:
+
+    ```sh
+    IMAGE                                               PORTS                                                  NAMES
+    jbcodeforce/saga-reefer-ms                           8443/tcp, 0.0.0.0:8081->8080/tcp                       reeferms
+    jbcodeforce/saga-vessel-ms                           8443/tcp, 0.0.0.0:8082->8080/tcp                       vesselms
+    jbcodeforce/saga-order-ms                            0.0.0.0:8080->8080/tcp, 8443/tcp                       orderms
+    obsidiandynamics/kafdrop                             0.0.0.0:9000->9000/tcp                                 kafdrop
+    quay.io/strimzi/kafka:latest-kafka-3.4.1                                                                    saga-choreography-kafka-addTopics-1
+    quay.io/strimzi/kafka:latest-kafka-3.4.1             0.0.0.0:9092->9092/tcp, 0.0.0.0:29092->9092/tcp        kafka
+    quay.io/apicurio/apicurio-registry-mem:2.4.4.Final   8443/tcp, 8778/tcp, 9779/tcp, 0.0.0.0:8090->8080/tcp   apicurio
+    quay.io/strimzi/kafka:latest-kafka-3.4.1             0.0.0.0:2181->2181/tcp                                 zookeeper
+    ```
+
+1. Send a good order and validate the events are created and the state of the order:
+
+    ```sh
+    ./e2e/sendGoodOrder.sh
+    ```
+
+    The response will be:
+
+    ```json
+    {"orderID":"efe301e5-8c25-4568-8cd3-c6f8655e301d",
+    "productID":"P01",
+    "customerID":"C01",
+    "quantity":10,
+    "pickupAddress":{"street":"1st main street","city":"San Francisco","country":"USA","state":"CA","zipcode":"95051"},
+    "pickupDate":"2023/9/1",
+    "destinationAddress":{"street":"1st horizon road","city":"Hong Kong","country":"HK","state":"S1","zipcode":"95051"},
+    "expectedDeliveryDate":null,"
+    creationDate":"2023-09-19",
+    "updateDate":"2023-09-19",
+    "status":"pending",
+    "vesselID":null,
+    "containerIDs":null}%  
+    ```
+
+    We can use Kafdrop at [http://localhost:9000] to see the content of the different topics.
+
+    ![](./images/kafdrop-1.png)
+
+    Then select a topic and go to the message view:
+
+    ![](./images/kafdrop-orders-1.png)
+
+    We can do the same for Reefers and Vessels topics.
+
+1. The status of the order is now "Assigned".
+
+1. Assess the compensation flow with one of the two order:
+
+    ```sh
+    ./e2e/sendNoReeferOrder.sh
+    # or
+    ./e2e/sendNoVesselOrder.sh
+    ```
 
 ## More reading
 

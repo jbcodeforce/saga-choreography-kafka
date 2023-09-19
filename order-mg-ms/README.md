@@ -10,15 +10,20 @@ Any problem in the process should move the order onhold state.
 
 ## Running the application in dev mode
 
-You can run your application in dev mode that enables live coding using:
+You can run your application in dev mode that enables live coding using, but you need a Kafka broker running locally (quarkus dev alone will not work):
 
 ```shell script
 docker compose up -d
 # Then
 ./mvnw compile quarkus:dev
 ```
+* The tests are running successfully and address happypath and no vessel or no reefer events processing.
 
-* Send new order with curl using `e2e/sendOrder.sh` script, and verify in Kafdrop `orders` topic an event is created, like:
+```sh
+./mvnw test
+```
+
+* For integration tests, send new order with curl using `e2e/sendOrder.sh` script, and verify in Kafdrop `orders` topic an event is created, like:
 
 ```json
 {
@@ -39,6 +44,14 @@ docker compose up -d
    }
 }
 ```
+
+* Verify the topics has the event with the script:
+
+```sh
+./e2e/verifyOrdersTopic.sh
+```
+
+* For end to end testing at the solution level see content in main folder.
 
 ## Packaging and running the application
 
