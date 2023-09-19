@@ -56,4 +56,8 @@ public class OrderEvent extends EventBase {
         this.version = DEFAULT_VERSION;
     }
 
+    public String toString(){
+        return "OrderEvent: "+this.eventType+" status: " + this.status+" "+this.orderID+" "+this.productID+" "+this.customerID+" "+this.timestampMillis;
+    }
+
 }

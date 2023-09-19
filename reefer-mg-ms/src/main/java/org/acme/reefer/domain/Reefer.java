@@ -24,6 +24,6 @@ public class Reefer {
    public Reefer(){}
 
    public String toString(){
-      return "Freezer: " + reeferID + " capacity: " + capacity + " status: " + status;
+      return "Freezer: " + reeferID + " location " + location + " capacity: " + capacity + " status: " + status;
    }
 }

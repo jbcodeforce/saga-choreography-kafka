@@ -1,13 +1,14 @@
 package org.acme.order.domain;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.acme.order.infra.events.order.OrderEventProducer;
 import org.acme.order.infra.repo.OrderRepository;
 
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -27,13 +28,13 @@ public class OrderService {
 	@Inject
 	public OrderEventProducer producer;
 
-    public List<ShippingOrder> getAllOrders() {
+    public Multi<ShippingOrder> getAllOrders() {
 		return repository.getAll();
 	}
 
     // some level of integrity between saving to the repository and sending to the messaging via reactive messaging
     @Transactional
-    public ShippingOrder createOrder(ShippingOrder order) {
+    public Uni<ShippingOrder> createOrder(ShippingOrder order) {
         if (order.orderID == null) {
             order.orderID = UUID.randomUUID().toString();
         }
@@ -45,11 +46,11 @@ public class OrderService {
         logger.info("create order for " + order.orderID);
         repository.addOrder(order);
 		producer.sendOrderCreatedEventFrom(order); 
-        return order;
+        return Uni.createFrom().item(order);
     }
 
 
-    public ShippingOrder getOrderById(String id) {
+    public Uni<ShippingOrder> getOrderById(String id) {
         return repository.findById(id);
     }
 

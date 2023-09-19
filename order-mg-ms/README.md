@@ -18,7 +18,27 @@ docker compose up -d
 ./mvnw compile quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+* Send new order with curl using `e2e/sendOrder.sh` script, and verify in Kafdrop `orders` topic an event is created, like:
+
+```json
+{
+   "timestampMillis": 1695077619882,
+   "eventType": "OrderCreated",
+   "version": "1.0.0",
+   "orderID": "b485e2a6-521c-4c99-9f7d-a0640b36e433",
+   "productID": "P01",
+   "customerID": "C01",
+   "quantity": 10,
+   "status": "pending",
+   "payload": {
+      "destinationCity": "Hong Kong",
+      "pickupCity": "San Francisco",
+      "pickupDate": "2023/9/1",
+      "expectedCapacity": 10,
+      "creationDate": "Mon Sep 18 15:53:39 PDT 2023"
+   }
+}
+```
 
 ## Packaging and running the application
 
@@ -56,3 +76,8 @@ You can then execute your native executable with: `./target/order-mg-ms-1.0.0-ru
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
 
 
+## Source of information of dev practices used in this repo
+
+* [Quarkus Rest Client](https://quarkus.io/guides/rest-client-reactive)
+* [Reactive programming with Munity](https://smallrye.io/smallrye-mutiny/2.4.0/)
+* [Restassured testing](https://www.baeldung.com/rest-assured-response)

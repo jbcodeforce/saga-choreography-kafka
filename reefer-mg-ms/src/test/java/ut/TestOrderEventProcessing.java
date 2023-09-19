@@ -1,82 +1,98 @@
 package ut;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.awaitility.Awaitility.await;
 
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import org.acme.reefer.domain.Reefer;
 import org.acme.reefer.infra.events.order.OrderCreatedEvent;
 import org.acme.reefer.infra.events.order.OrderEvent;
-import org.acme.reefer.infra.events.order.OrderEventDeserializer;
 import org.acme.reefer.infra.events.reefer.ReeferEvent;
-import org.acme.reefer.infra.events.reefer.ReeferEventDeserializer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.eclipse.microprofile.reactive.messaging.Message;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.wildfly.common.Assert;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.kafka.InjectKafkaCompanion;
-import io.quarkus.test.kafka.KafkaCompanionResource;
-import io.smallrye.reactive.messaging.kafka.companion.ConsumerTask;
-import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
+import io.smallrye.reactive.messaging.memory.InMemoryConnector;
+import io.smallrye.reactive.messaging.memory.InMemorySink;
+import io.smallrye.reactive.messaging.memory.InMemorySource;
+import jakarta.enterprise.inject.Any;
+import jakarta.inject.Inject;
 
 @QuarkusTest
-//@QuarkusTestResource(KafkaTestResourceLifecycleManager.class)
-@QuarkusTestResource(KafkaCompanionResource.class)
+@QuarkusTestResource(KafkaTestResourceLifecycleManager.class)
+
+@TestMethodOrder(OrderAnnotation.class)
 public class TestOrderEventProcessing {
-    @InjectKafkaCompanion 
-    KafkaCompanion companion;
 
-    @Test
-    public void sendOrderCreated(){
-        companion.registerSerde(OrderEvent.class, 
-                    new io.quarkus.kafka.client.serialization.ObjectMapperSerializer<OrderEvent>(), 
-                    new OrderEventDeserializer());
-        companion.registerSerde(ReeferEvent.class, 
-                    new io.quarkus.kafka.client.serialization.ObjectMapperSerializer<ReeferEvent>(), 
-                    new ReeferEventDeserializer());
-        OrderCreatedEvent oce = new OrderCreatedEvent("Sydney","San Francisco");
+    private static String inChannelName = "orders";
+    private static String outChannelName = "reefers";
 
-        OrderEvent oe = new OrderEvent(OrderEvent.ORDER_CREATED_TYPE,oce);
-        oe.orderID = "Test01";
-        oe.quantity = 80;
-        List<ProducerRecord<String,OrderEvent>> records = new ArrayList<ProducerRecord<String,OrderEvent>>();
-        records.add(new ProducerRecord<String,OrderEvent>("orders",oe.orderID,oe));
-        companion.produce(String.class, OrderEvent.class).fromRecords(records);
-
-        ConsumerTask<String,ReeferEvent> reefers = companion.consume(String.class, ReeferEvent.class).fromTopics("reefers", 1);
-        reefers.awaitCompletion();
-        ConsumerRecord<String,ReeferEvent> reeferEventRecord = reefers.getFirstRecord();
-        System.out.println("Reefer allocated is --> " + reeferEventRecord.value().reeferID);
-    }
-
-    /*
     @Inject @Any
     InMemoryConnector connector;
-    
-    @BeforeAll
-    public static void switchMyChannels() {
-        InMemoryConnector.switchIncomingChannelsToInMemory("orders");
-        InMemoryConnector.switchOutgoingChannelsToInMemory("reefers");
+
+    private Callable<Boolean> newReeferEventAdded( InMemorySink<ReeferEvent> reefers, int size) {
+        return () -> reefers.received().size() >= size;
     }
-    
-    @AfterAll
-    public static void revertMyChannels() {
-        InMemoryConnector.clear();
+
+    // need to add this method as with mvn test, there is parallel execution of all the tests, and 
+    // we can see the ReeferEvent: ab10a491-254c-4ea4-b84e-7dcac100069f of NewReeferCreated from it tests
+    private boolean assessIfOneOfTheEventIsExpected(InMemorySink<ReeferEvent> reefers, String expectedType) {
+        boolean found = false;
+        for (int i=0;i<reefers.received().size();i++) {
+            ReeferEvent reeferEvent = reefers.received().get(i).getPayload();
+            System.out.println(reeferEvent.toString());
+            if (expectedType.equals(reeferEvent.getEventType())) {
+                found = true;
+                break;
+            }
+
+        }        
+        return found;
     }
-    
+
     @Test
+    @Order(1)
     public void orderCreatedShouldGenerateReeferAllocated(){
-        InMemorySource<OrderEvent> orders = connector.source("orders");
-        InMemorySink<ReeferEvent> reefers = connector.sink("reefers");
-         
-        OrderCreatedEvent oce = new OrderCreatedEvent("Sydney","San Francisco");
-
-        OrderEvent oe = new OrderEvent(OrderEvent.ORDER_CREATED_TYPE,oce);
-        
-        orders.send(oe);
-
-        await().<List<? extends Message<ReeferEvent>>>until(reefers::received, t -> t.size() == 1);
-        
+        InMemorySource<OrderEvent> ordersChannel = connector.source(inChannelName);
+        InMemorySink<ReeferEvent> reefers = connector.sink(outChannelName);
+        OrderEvent oe = prepareOrderEvent(ordersChannel,"test-01",OrderEvent.ORDER_CREATED_TYPE);
+        ordersChannel.send(oe);
+       
+        await().<List<? extends Message<ReeferEvent>>>until(newReeferEventAdded(reefers,1));
+        Assert.assertTrue(assessIfOneOfTheEventIsExpected(reefers,ReeferEvent.REEFER_ALLOCATED_TYPE));
+        reefers.clear();
     }
-    */
+
+
+
+    @Order(2)
+    @Test
+    public void shouldGetReeferNotFound() {
+        InMemorySource<OrderEvent> ordersChannel = connector.source(inChannelName);
+        InMemorySink<ReeferEvent> reefers = connector.sink(outChannelName);
+
+        OrderEvent oe = prepareOrderEvent(ordersChannel,"test-02",OrderEvent.ORDER_CREATED_TYPE);
+        oe.productID="P15";
+        ordersChannel.send(oe);
+        await().<List<? extends Message<ReeferEvent>>>until(newReeferEventAdded(reefers,1));
+        Assert.assertTrue(assessIfOneOfTheEventIsExpected(reefers,ReeferEvent.REEFER_NOT_FOUND_TYPE));
+        reefers.clear();
+    }
+
+    private OrderEvent prepareOrderEvent( InMemorySource<OrderEvent> ordersChannel,String orderID, String evtType) {
+        OrderCreatedEvent oce =  new OrderCreatedEvent("San Francisco","Shanghai",50);
+        OrderEvent oe = new OrderEvent(evtType,oce);
+        oe.orderID= orderID;
+        oe.customerID = "C01";
+        oe.productID = "P02";
+        oe.quantity = 20;
+        oe.status=OrderEvent.PENDING_STATUS;   
+        return oe;
+    }
 }

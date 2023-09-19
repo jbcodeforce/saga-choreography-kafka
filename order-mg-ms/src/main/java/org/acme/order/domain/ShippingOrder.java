@@ -158,4 +158,8 @@ public class ShippingOrder {
 	public String getContainerIDs() {
 		return containerIDs;
 	}
+
+    public String toString(){
+        return "Order " + orderID + " of product " + productID + " with " + quantity + " units";
+    }
 }

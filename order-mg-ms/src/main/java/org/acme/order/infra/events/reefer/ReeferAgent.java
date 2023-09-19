@@ -3,8 +3,6 @@ package org.acme.order.infra.events.reefer;
 import java.util.concurrent.CompletionStage;
 import java.util.logging.Logger;
 
-import jakarta.inject.Inject;
-
 import org.acme.order.domain.ShippingOrder;
 import org.acme.order.infra.events.order.OrderEventProducer;
 import org.acme.order.infra.repo.OrderRepository;
@@ -12,7 +10,10 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 /**
  * Listen to the reefer topic and processes event from reefer service:
@@ -34,7 +35,10 @@ public class ReeferAgent {
         ReeferEvent oe = messageWithReeferEvent.getPayload();
         switch( oe.getEventType()){
             case ReeferEvent.REEFER_ALLOCATED_TYPE:
-                ReeferEvent re=processReeferAllocatedEvent(oe);
+                processReeferAllocatedEvent(oe);
+                break;
+            case ReeferEvent.REEFER_NOT_FOUND_TYPE:
+                processReeferNotFound(oe);
                 break;
             default:
                 break;
@@ -42,35 +46,57 @@ public class ReeferAgent {
         return messageWithReeferEvent.ack();
     }
 
+   
     /**
-     * When order created, search for reefers close to the pickup location,
-     * add them in the container ids and send an event as ReeferAllocated
+     * The order can have one to many containers allocated.
      */
+    @Transactional
     public ReeferEvent processReeferAllocatedEvent( ReeferEvent re){
-        ReeferAllocated ra = (ReeferAllocated)re.payload;
-        logger.info("Received reefer event for : " + re.reeferID + " oid:" + ra.orderID);
-               
-        ShippingOrder order = repo.findById(ra.orderID);
-        if (order != null) {
-            order.containerIDs = ra.reeferIDs;
+        ReeferAllocated reeferEvent = (ReeferAllocated)re.payload;
+        logger.info("Received reefer allocated event for : " + re.reeferID + " oid:" + reeferEvent.orderID);
+        
+        Uni<ShippingOrder> so = repo.findById(reeferEvent.orderID)
+        .onFailure().invoke(failure -> logger.warning(reeferEvent.orderID + " not found in repository"))
+        .onItem().invoke( order -> {
+            logger.info("Order: " + reeferEvent.orderID + " found let modify its reefer" );  
+            order.containerIDs = reeferEvent.reeferIDs;
             if (order.vesselID != null) {
                 order.status = ShippingOrder.ASSIGNED_STATUS;
-                producer.sendOrderUpdateEventFrom(order);
+                
             }
-            repo.updateOrder(order);
-        } else {
-            logger.warning(ra.orderID + " not found in repository");
-        }
-        
+            
+        });
+        so.subscribe().with( o -> {
+            producer.sendOrderUpdateEventFrom(o);
+            repo.updateOrder(o);
+        });
         return re;
     }
+
+    @Transactional
+    private void processReeferNotFound(ReeferEvent oe) {
+        ReeferNotFound reeferEvent = (ReeferNotFound)oe.payload;
+        logger.info("Received reefer not found event for : " + reeferEvent.message);
+        
+        Uni<ShippingOrder> so= repo.findById(reeferEvent.orderID)
+        .onFailure().invoke(failure -> logger.warning(reeferEvent.orderID + " not found in repository"))
+        .onItem().invoke( order -> {
+            order.status = ShippingOrder.ONHOLD_STATUS;
+        });
+        so.subscribe().with( o -> {
+            producer.sendOrderUpdateEventFrom(o);
+            repo.updateOrder(o);
+        });
+    }
+
 
     @Scheduled(cron = "{reefer.cron.expr}")
     void cronJobForReeferAnswerNotReceived() {
         // badly done - brute force as of now
-        for(ShippingOrder o : repo.getAll()) {
+        Iterable<ShippingOrder> orders = repo.getAll().subscribe().asIterable();
+        for(ShippingOrder o : orders) {
             if (o.status.equals(ShippingOrder.PENDING_STATUS)) {
-                if (o.vesselID != null) {
+                if (o.containerIDs != null) {
                     o.status = ShippingOrder.ONHOLD_STATUS;
                     producer.sendOrderUpdateEventFrom(o);
                 }

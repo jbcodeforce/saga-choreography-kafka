@@ -41,7 +41,7 @@ public class ReeferRepositoryMem implements ReeferRepository {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        reefers.values().stream().forEach(v -> System.out.println(v.reeferID));
+        reefers.values().stream().forEach(v -> System.out.println(v.toString()));
     }
 
     public List<Reefer> getAll(){

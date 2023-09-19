@@ -33,8 +33,8 @@ public class VesselEventProcessingTest {
     
     private static String outChannelName = "vessels";
 
-    private Callable<Boolean> newVesselAdded( InMemorySink<VesselEvent> vessels) {
-        return () -> vessels.received().size() == 1;
+    private Callable<Boolean> newVesselAdded( InMemorySink<VesselEvent> vessels, int size) {
+        return () -> vessels.received().size() == size;
     }
     
     @Test
@@ -45,7 +45,7 @@ public class VesselEventProcessingTest {
         Assert.assertNotNull(out);
         InMemorySink<VesselEvent> vessels = connector.sink(outChannelName);
         
-        await().<List<? extends Message<Vessel>>>until(newVesselAdded(vessels));
+        await().<List<? extends Message<VesselEvent>>>until(newVesselAdded(vessels,1));
 
         VesselEvent vesselEvent = vessels.received().get(0).getPayload();
         Assert.assertNotNull(vesselEvent);

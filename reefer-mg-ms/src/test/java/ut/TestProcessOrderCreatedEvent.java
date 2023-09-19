@@ -21,6 +21,7 @@ import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
+
 public class TestProcessOrderCreatedEvent {
     
     @Inject
@@ -34,7 +35,7 @@ public class TestProcessOrderCreatedEvent {
      */
     @Test
     public void shouldHaveTwoReefersForAcapacityOf120(){
-        List<Reefer> f = repo.getReefersForOrder("T01", "San Francisco", 120);
+        List<Reefer> f = repo.getReefersForOrder("T01", "New York", 120);
         Assertions.assertEquals(2,f.size());
     }
 
@@ -64,7 +65,7 @@ public class TestProcessOrderCreatedEvent {
     @Test
     public void shouldGetAReeferAllocatedEventFromAGoodOrderCreatedEvent(){
 
-        OrderCreatedEvent oce = new OrderCreatedEvent("Sydney","San Francisco");
+        OrderCreatedEvent oce = new OrderCreatedEvent("San Francisco","Singapour",30);
 
         OrderEvent oe = new OrderEvent(OrderEvent.ORDER_CREATED_TYPE,oce);
         oe.orderID = "Test01";
@@ -79,7 +80,7 @@ public class TestProcessOrderCreatedEvent {
     @Test
     public void shouldNotGetAnyEventFromUnfulliableOrderCreatedEvent(){
 
-        OrderCreatedEvent oce = new OrderCreatedEvent("Sydney","San Juan");
+        OrderCreatedEvent oce = new OrderCreatedEvent("Sydney","San Juan",20);
 
         OrderEvent oe = new OrderEvent(OrderEvent.ORDER_CREATED_TYPE,oce);
         oe.orderID = "Test02";
@@ -88,4 +89,6 @@ public class TestProcessOrderCreatedEvent {
         Assertions.assertNull(re);
 
     }
+
+   
 }

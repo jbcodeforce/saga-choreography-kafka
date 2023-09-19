@@ -7,6 +7,7 @@ import org.acme.vessel.domain.Vessel;
 import org.acme.vessel.infra.events.vessels.VesselAllocated;
 import org.acme.vessel.infra.events.vessels.VesselEvent;
 import org.acme.vessel.infra.events.vessels.VesselEventProducer;
+import org.acme.vessel.infra.events.vessels.VesselNotFound;
 import org.acme.vessel.infra.repo.VesselRepository;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -34,6 +35,9 @@ public class OrderAgent {
     public CompletionStage<Void> processOrder(Message<OrderEvent> messageWithOrderEvent){
         logger.info("OrderAgent - Received order : " + messageWithOrderEvent.getPayload().orderID);
         OrderEvent oe = messageWithOrderEvent.getPayload();
+        if (processEventForDemonstratingFullfillmentIssue(oe)) {
+            return messageWithOrderEvent.nack(new Throwable("Vessel not fit for order"));
+        }
         switch( oe.getEventType()){
             case OrderEvent.ORDER_CREATED_TYPE:
                 processOrderCreatedEvent(oe);
@@ -92,5 +96,15 @@ public class OrderAgent {
             eventProducer.sendEvent(vesselID, ve);
         } 
         // if reachinh here onHold may come from vessel not found
+    }
+
+    private boolean processEventForDemonstratingFullfillmentIssue(OrderEvent oe) {
+        if ("P16".equals(oe.productID)) {
+            VesselNotFound vnf = new VesselNotFound(oe.orderID);
+            VesselEvent re = new VesselEvent(null,VesselEvent.VESSEL_NOT_FOUND_TYPE,vnf);   
+            eventProducer.sendEvent("DummyVessel",re);
+            return true;
+        }
+        return false;
     }
 }

@@ -47,8 +47,9 @@ public class OrderEventProcessingTest {
         InMemorySource<OrderEvent> ordersChannel = connector.source(inChannelName);
         InMemorySink<VesselEvent> vessels = connector.sink(outChannelName);
 
-        sendAnOrder(ordersChannel,"O02",OrderEvent.ORDER_CREATED_TYPE);
-        await().<List<? extends Message<Vessel>>>until(newVesselAdded(vessels));
+        OrderEvent oe =prepareOrderEvent(ordersChannel,"O02",OrderEvent.ORDER_CREATED_TYPE);
+        ordersChannel.send(oe);
+        await().<List<? extends Message<Vessel>>>until(newVesselAdded(vessels,1));
         
         VesselEvent vesselEvent = vessels.received().get(0).getPayload();
         Assert.assertTrue(vesselEvent.getEventType().equals(VesselEvent.VESSEL_ALLOCATED_TYPE));
@@ -56,8 +57,8 @@ public class OrderEventProcessingTest {
         vessels.clear();
     }
 
-    private Callable<Boolean> newVesselAdded( InMemorySink<VesselEvent> vessels) {
-        return () -> vessels.received().size() == 1;
+    private Callable<Boolean> newVesselAdded( InMemorySink<VesselEvent> vessels, int size) {
+        return () -> vessels.received().size() == size;
     }
    
     @Test
@@ -67,16 +68,17 @@ public class OrderEventProcessingTest {
         InMemorySource<OrderEvent> ordersChannel = connector.source(inChannelName);
         InMemorySink<VesselEvent> vessels = connector.sink(outChannelName);
 
-        sendAnOrder(ordersChannel,"O44",OrderEvent.ORDER_CREATED_TYPE);
+        OrderEvent oe = prepareOrderEvent(ordersChannel,"O44",OrderEvent.ORDER_CREATED_TYPE);
+        ordersChannel.send(oe);
         // a vessel is allocated
-        await().<List<? extends Message<Vessel>>>until(newVesselAdded(vessels));
+        await().<List<? extends Message<Vessel>>>until(newVesselAdded(vessels,1));
         VesselEvent vesselEvent = vessels.received().get(0).getPayload();
         Assert.assertTrue(vesselEvent.getEventType().equals(VesselEvent.VESSEL_ALLOCATED_TYPE));
         System.out.println(vesselEvent.payload.toString());
        
         // now send an onHold on the same order to compensate the vessel
         OrderUpdatedEvent oue = new OrderUpdatedEvent(vesselEvent.vesselID,"O44");
-        OrderEvent oe = new OrderEvent(OrderEvent.ORDER_UPDATED_TYPE, oue);
+        oe = new OrderEvent(OrderEvent.ORDER_UPDATED_TYPE, oue);
         oe.orderID= "O44";
         oe.customerID = "C01";
         oe.status = OrderEvent.ONHOLD_STATUS;
@@ -90,13 +92,30 @@ public class OrderEventProcessingTest {
         vessels.clear();
     }
     
-    private void sendAnOrder( InMemorySource<OrderEvent> ordersChannel,String orderID, String evtType) {
+    private OrderEvent prepareOrderEvent( InMemorySource<OrderEvent> ordersChannel,String orderID, String evtType) {
         OrderCreatedEvent oce =  new OrderCreatedEvent("Oakland","Shanghai",50);
         OrderEvent oe = new OrderEvent(evtType,oce);
         oe.orderID= orderID;
         oe.customerID = "C01";
         oe.quantity = 20;
         oe.status=OrderEvent.PENDING_STATUS;   
+        return oe;
+    }
+
+    @Order(4)
+    @Test
+    public void shouldGetVesselNotFound() {
+        InMemorySource<OrderEvent> ordersChannel = connector.source(inChannelName);
+        InMemorySink<VesselEvent> vessels = connector.sink(outChannelName);
+
+        OrderEvent oe = prepareOrderEvent(ordersChannel,"Order16",OrderEvent.ORDER_CREATED_TYPE);
+        oe.productID="P16";
         ordersChannel.send(oe);
+        await().<List<? extends Message<Vessel>>>until(newVesselAdded(vessels,1));
+        
+        VesselEvent vesselEvent = vessels.received().get(0).getPayload();
+        Assert.assertTrue(vesselEvent.getEventType().equals(VesselEvent.VESSEL_NOT_FOUND_TYPE));
+        System.out.println(vesselEvent.payload.toString());
+        vessels.clear();
     }
 }

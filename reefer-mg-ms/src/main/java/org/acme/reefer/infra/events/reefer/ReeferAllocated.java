@@ -36,4 +36,8 @@ public class ReeferAllocated extends ReeferVariablePayload {
 		this.orderID = oid;
 		this.reeferIDs = cid;
 	} 
+
+	public String toString(){
+		return "Reefer " + reeferIDs + " assigned to " + orderID;
+	}
 }

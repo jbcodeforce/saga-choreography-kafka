@@ -49,6 +49,7 @@ public class OrderEventProducer {
     public void sendOrder(String key, OrderEvent orderEvent){
         logger.info("key " + key + " order event " + orderEvent.orderID 
                     + " etype:" + orderEvent.eventType 
+                    + " status:" + orderEvent.status
                     + " ts: " + orderEvent.timestampMillis);
 		eventProducer.send(Message.of(orderEvent).addMetadata(OutgoingKafkaRecordMetadata.<String>builder()
 			.withKey(key).build())

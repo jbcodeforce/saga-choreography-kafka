@@ -6,12 +6,12 @@ public class VesselNotFound extends VesselVariablePayload{
 
     public VesselNotFound(String oid) {
         super();
-        orderID = oid;
-        message = "Vessel not found around pickup area around pickup date.";
+        this.orderID = oid;
+        this.message = "Vessel not found around pickup area around pickup date for: " + orderID;
     }
 
     public String toString() {  
-            return "OrderID:" + orderID + " no Vessel found";
+            return message;
         
     }
 }

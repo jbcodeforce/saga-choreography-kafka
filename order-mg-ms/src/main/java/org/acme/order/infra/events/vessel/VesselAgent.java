@@ -3,8 +3,6 @@ package org.acme.order.infra.events.vessel;
 import java.util.concurrent.CompletionStage;
 import java.util.logging.Logger;
 
-import jakarta.inject.Inject;
-
 import org.acme.order.domain.ShippingOrder;
 import org.acme.order.infra.events.order.OrderEventProducer;
 import org.acme.order.infra.repo.OrderRepository;
@@ -12,7 +10,9 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 /**
@@ -47,39 +47,41 @@ public class VesselAgent {
 
     @Transactional
     public VesselEvent processVesselAssignEvent(VesselEvent ve) {
-        VesselAllocated ra = (VesselAllocated)ve.payload;
-        ShippingOrder order = repo.findById(ra.orderID);
-        if (order != null) {
+        VesselAllocated vesselEvent = (VesselAllocated)ve.payload;
+        repo.findById(vesselEvent.orderID)
+        .onFailure().invoke(failure -> logger.warning(vesselEvent.orderID + " not found in repository"))
+        .onItem().invoke( order -> {
+            logger.info("Order: " + vesselEvent.orderID + " found let modify its vessel" );
             order.vesselID = ve.vesselID;     
             if (order.containerIDs != null) {
                 order.status = ShippingOrder.ASSIGNED_STATUS;
                 producer.sendOrderUpdateEventFrom(order);
             }
             repo.updateOrder(order);
-        } else {
-            logger.warning(ra.orderID + " not found in repository");
-        }
+            });
         
         return ve;
     }
 
     @Transactional
     public void processVesselNotFound(VesselEvent ve){
-        VesselNotFound ra = (VesselNotFound)ve.payload;
-        logger.info("Order: " + ra.orderID + " " + ra.message );
-        ShippingOrder order = repo.findById(ra.orderID);
-        if (order != null) {
-            order.status = ShippingOrder.ONHOLD_STATUS;
-            repo.updateOrder(order);
-            producer.sendOrderUpdateEventFrom(order);
-        }
-        
+        VesselNotFound vesselEvent = (VesselNotFound)ve.payload;
+        logger.info("Order: " + vesselEvent.orderID + " " + vesselEvent.message );
+        Uni<ShippingOrder> order = repo.findById(vesselEvent.orderID)
+        .onFailure().invoke(f -> logger.severe("order " + vesselEvent.orderID + " not found in repository"))
+        .onItem().invoke( o -> {
+            logger.info("order to process");
+            o.status = ShippingOrder.ONHOLD_STATUS;
+        });
+        order.subscribe().with(o -> {repo.updateOrder(o);
+        producer.sendOrderUpdateEventFrom(o);});
     }
 
     @Scheduled(cron = "{vessel.cron.expr}")
     void cronJobForVesselAnswerNotReceived() {
         // badly done - brute force as of now
-        for(ShippingOrder o : repo.getAll()) {
+        Iterable<ShippingOrder> orders = repo.getAll().subscribe().asIterable();
+        for(ShippingOrder o : orders) {
             if (o.status.equals(ShippingOrder.PENDING_STATUS)) {
                 if (o.vesselID != null) {
                     o.status = ShippingOrder.ONHOLD_STATUS;

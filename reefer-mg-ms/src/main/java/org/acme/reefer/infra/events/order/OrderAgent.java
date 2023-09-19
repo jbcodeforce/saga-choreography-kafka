@@ -8,6 +8,7 @@ import org.acme.reefer.domain.Reefer;
 import org.acme.reefer.infra.events.reefer.ReeferAllocated;
 import org.acme.reefer.infra.events.reefer.ReeferEvent;
 import org.acme.reefer.infra.events.reefer.ReeferEventProducer;
+import org.acme.reefer.infra.events.reefer.ReeferNotFound;
 import org.acme.reefer.infra.repo.ReeferRepository;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -34,12 +35,15 @@ public class OrderAgent {
     public CompletionStage<Void> processOrder(Message<OrderEvent> messageWithOrderEvent){
         logger.info("Received order : " + messageWithOrderEvent.getPayload().orderID);
         OrderEvent oe = messageWithOrderEvent.getPayload();
+        if (processEventForDemonstratingFullfillmentIssue(oe)) {
+            return messageWithOrderEvent.nack(new Throwable("Reefer not fit for order"));
+        }
         switch( oe.getEventType()){
             case OrderEvent.ORDER_CREATED_TYPE:
                 processOrderCreatedEvent(oe);
                 break;
             case OrderEvent.ORDER_UPDATED_TYPE:
-                logger.info("Receive order update " + oe.status);
+                logger.info("Recieved order update " + oe.status);
                 // todo only compensate if cancelled
                 compensateOrder(oe.orderID);
                 break;
@@ -69,5 +73,16 @@ public class OrderAgent {
  
     public void compensateOrder(String oid) {
         repo.cleanTransaction(oid);
+    }
+
+
+    private boolean processEventForDemonstratingFullfillmentIssue(OrderEvent oe) {
+        if ("P15".equals(oe.productID)) {
+            ReeferNotFound rnf = new ReeferNotFound(oe.orderID);
+            ReeferEvent re = new ReeferEvent(null,ReeferEvent.REEFER_NOT_FOUND_TYPE,rnf);   
+            reeferEventProducer.sendEvent(re.reeferID,re);
+            return true;
+        }
+        return false;
     }
 }
